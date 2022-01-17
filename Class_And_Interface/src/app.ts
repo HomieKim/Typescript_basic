@@ -1,137 +1,69 @@
-class Department {
-    /* 자바처럼 멤버 필드를 선언한 후 생성자로 초기화 할 수도 있지만 이중으로 반복되는 생성자 한번에 줄일 수 있습니다.
-       생성자의 매개변수에 접근 지시자와 변수이 이름 타입을 선언해 줍니다. */
-    //private id : string;
-    //private name : string;
-    private employees : string[] = [];
-    // 초기화 이후 값이 변경되면 안되는 경우 readonly를 사용합니다.
-    constructor(private readonly id : string, private name : string) {
-        //this.id= id_;
-        //this.name = n;
-    }
-    // static 메서드 나 필드는 인스턴스 생성 없이 클래스 이름으로 접근할 수 있습니다.
-    // 단 static 메서드는 같은 클래스라도 static 키워드가 없으면 참조 할 수 없습니다. 클래스명으로 접근해야 합니다.
+/* 인터페이스 내용 */
 
-    static nowYear = 2022;
-    static createDate(month : number, day:number) {
-        return {
-            year : this.nowYear,   // static 메서드는 this로 static 변수 참조 가능
-            month : month,
-            day : day
-        };
-    };
-    describe(this : Department) {
-        console.log('**describe**');
-        console.log('name : ', this.name);
-        console.log('ID : ', this.id);
-        //console.log('nowYear : ' this.nowYear) static은 this로 접근 x
-        console.log('nowYear : ', Department.nowYear); // 클래스명으로 접근
-    };
+// 인터페이스란 간단히는 객체가 어떤 모습인제 설명하는 역할을 합니다.
+/*
+인터페이스를 사용해서 객체의 타입 구조를 정의해서 타임체크를 할 수 있습니다.
+인터페이스 왜 필요 한가? 커스텀 types랑 같은기능 아닌가?
+interface 와 custom type은 차이점이 있습니다.
 
-    addEmployee(employee : string) {
-        this.employees.push(employee);
-    }
-
-    printEmployeeInfo(){
-        console.log('총 ',this.employees.length,'명');
-        console.log(this.employees);
-    }
+인터페이스는 객체의 구조를 설명하기 위해서만 사용될 수 있습니다.
+커스텀 타입은 조금 더 유연하게 사용이 가능하지만
+interface에 정의된 기능은 반드시 구현해야 합니다.
+class에 implemnets를 추가하여 여러 인터페이스를 구현할 수 있습니다.
+서로 다른 클래스간에 기능을 공유하기 위해 사용됩니다. 
+*/
+interface Named {
+    readonly name : string;
+    outputName?: string; // optional property 선택적으로 클래스가 값을 가지게 할 수 있습니다.
+    /*
+        참고
+        ? : optional 말그대로 선택적으로 값을 가짐
+        ! : 타입 체크시 null 또는 undefined가 들어오지 않을 것이라는 것을 알려주는 용도
+        !! : 다른 타입의 데이터를 boolean 타입으로 명시적으로 형변환 하기위해 사용
+    */
 }
 
-// extends 키워드를 통해 원하는 클래스를 상속 받을 수 있습니다.
-class ITDepartment extends Department {
-    // 하위 클래스에서 고유의 생성자를 사용하지 않으면 부모의 생성자를 사용합니다.
-    // 하위 클래스의 constructor는 super()를 통해 부모 생성자를 사용해야 합니다.
-    constructor(id : string, private admins : string[]){
-        super(id, 'IT');
-    }
-    printAdmins(){
-        console.log('admins : ', this.admins);
-    }
-
-    addEmployee(name: string) {
-        if(name === 'jennie'){
-            return;
-        }
-        super.addEmployee(name);
-    }
+interface Greetable extends Named{
+    //name : string = 'homie'; 인터페이스는 초기화 x
+    // readonly name : string;
+    greet(phrase : string) : void;
 }
 
-class AccountingDepartment extends Department {
-
-    private lastreport : string;
-    static instance : AccountingDepartment;
-    get mostRecentReport() {
-        if(this.lastreport){
-            return this.lastreport;
-        }
-        throw new Error('no report found.');
+class Person implements Greetable {
+    name  : string;
+    age = 20;
+    constructor(n : string) {
+        this.name = n;
+        
     }
 
-    set mostRecentReport(value : string){
-        if(!value){
-            return;
-        }
-        this.addReport(value);
+    greet(text: string): void {
+        console.log( text,' ', this.name);
+        console.log('my age : ', this.age);
     }
-
-    private constructor(id:string, public reports : string[]){
-        super(id, "Accounting");
-        this.lastreport = reports[0];
-    }
-
-    static getInstance(){
-        if(AccountingDepartment.instance){  // instance가 있다면 해당 instance를 그대로 리턴
-            return this.instance; // static메서드는 static필드를 this로 접근가능
-        }
-        // instance가 없는경우 (최초생성) 생성자를 통해(private) 생성 후 리턴
-        this.instance = new AccountingDepartment('Acc_ID', []);
-        return this.instance;
-    }
-
-    addReport(text : string) {
-        this.reports.push(text);
-        this.lastreport = text;
-
-    }
-
-    printReports() {
-        console.log('reports : ', this.reports);
-    }
+    
 }
+let user1 : Greetable;
+user1 = new Person('Homie');
+// user1 = {
+//     name : 'homie', // 객체 정의 할땐 ;아니라 ,로 구분
+//     age : 25,
+//     greet(text : string) {
+//         console.log( text,' ', this.name);
+//         console.log('my age : ', this.age);
+//     },
+// };
 
-const IT = new ITDepartment('id_IT', ['max', 'homie']);
-/* 싱글톤 패턴 */
-// 싱글톤 패턴이란 클래스의 인스턴스를 하나로 제한하고 싶을 때 사용합니다. 예를 들어 AccountingDepartment가 오직 하나로만 운영된다고 가정할 때
-// private 생성자를 사용하여 클래스 내부에서만 생성자를 생성하고 static메서드를 통해 instance를 리턴합니다.
-//const accounting = new AccountingDepartment('My_Accounting',[]);
-const accounting = AccountingDepartment.getInstance();
-const accounting2 = AccountingDepartment.getInstance();
+user1.greet('Hi~ My name is');
+console.log(user1);
 
-console.log(accounting, accounting2); // 두 인스턴스는 같은 인스턴스(싱글톤 패턴에 의해)
-
-
-// console.log(accounting.mostRecentReport); setter에서 reports가 비었을 경우 throw new Error해줬음
-console.log(accounting);
-accounting.describe();
-accounting.addEmployee('homie');
-accounting.addEmployee('siri');
-// accounting.employees[1] = 'zizi'; 접근 지시자를 통해 외부에서 class 내부의 필드에 접근할 수 없도록 해야합니다.`
-accounting.printEmployeeInfo();
-// this는 현재 객체를 참조하는 것이므로 단순히 함수 주소값면 복사했을 때 undefined나옴
-// const accountingCopy = { name : 'copyName',describe : accounting.describe};
-// accountingCopy.describe(); // undefined나옴, 타입스크립트에서는 이를 해결하기위해 this에 클래스 타입을 지정할 수 있음
-console.log(IT);
-accounting.addReport('sample report..');
-accounting.printReports();
-console.log('report[1]', accounting.reports[0]);
-accounting.addReport('sample report no.2');
-console.log('last report : ', accounting.mostRecentReport);
-accounting.mostRecentReport = 'use setter report';
-
-
-IT.addEmployee('jennie');
-IT.addEmployee('MAX');
-const dateObj = new Date();
-const dateInfo = Department.createDate(dateObj.getMonth()+1, dateObj.getDate());
-console.log('dateInfo : ', dateInfo);
+// 함수타입을 interface로 대체할 수 있습니다.
+//type AddFn = (a :number , b: number) => number;
+interface AddFn {
+    (a:number, b:number) :number;
+}
+let add : AddFn;
+add = (n1:number, n2: number) =>{
+    return n1 + n2;
+};
+console.log(add(1,2));
